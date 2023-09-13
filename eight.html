@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            margin-top: 200px;
+            height: 50px;
+            padding: 0 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .number {
+            padding: 5px;
+            width: 50px;
+            height: 50px;
+            font-size: 25px;
+            line-height: 50px;
+            text-align: center;
+            font-family: "微软雅黑";
+            border-radius: 50%;
+            margin: 0 5px;
+            background-image: linear-gradient(180deg, #FE8A5C 0%, #FF4D4D 100%);
+            color: #fff;
+            box-shadow: rgba(0, 0, 0, 0.2) 0px 6px 6px;
+        }
+
+        .status {
+            font-size: 16px;
+            color: #777;
+            width: 100%;
+            text-align: center;
+        }
+        .info{
+            position: fixed;
+            left: 5px;
+            bottom:5px;
+            color: #555;
+        }
+        .info>p{
+            font-size:12px;
+            padding: 0;
+            margin: 0;
+        }
+        .processbar{
+            width: 200px;
+            height: 20px;
+            margin:10px auto;
+            position:relative;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+        }
+        .processbar-txt{
+            position:absolute;
+            width: inherit;
+            height: inherit;
+            text-align: center;
+            top: 0;
+            font-size: 13px;
+            line-height: 20px;
+        }
+        .processbar-body{
+            display: flex;
+            width: 100%;
+            height: inherit;
+        }
+        .processbar-body .current{
+            background-image: linear-gradient(45deg, #33e388, #2b9960);
+            flex: 0%;
+        }
+        .processbar-body .residual{
+            flex: 100%;
+            background-color: #cbcbcb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="status">Ready!</div>
+    <div class="processbar">
+        <div class="processbar-body">
+            <div class="current"></div>
+            <div class="residual"></div>
+        </div>
+        <div class="processbar-txt">0 %</div>
+    </div>
+    <div class="info"></div>
+    <div class="box">
+
+    </div>
+    <script>
+        var box = document.querySelector(".box");
+        var state = document.querySelector(".status");
+        var info=document.querySelector('.info');
+        var balls = new Array();
+        var length = 0;
+        var loopTimesCopy;
+        var loopTimes;
+        var t;
+        var lastLen=0;
+        var speed=0;
+
+        var processbar=document.querySelector(".processbar");
+        var processbar_current=document.querySelector(".current");
+        var processbar_residual=document.querySelector(".residual");
+        var processbar_txt=document.querySelector(".processbar-txt");
+
+        var speedTimer = setInterval(() => {
+            let lendiff = balls.length - lastLen;
+            lastLen=balls.length;
+            speed=lendiff>0?lendiff:0;
+        }, 1000);
+
+        state.addEventListener('click',(e)=>{
+            state.style.color = "#777";
+            if(balls.length>0 && t){
+                if(confirm("Do you want to pause?")){
+                    clearInterval(t);
+                    t=undefined;
+                    state.innerText="Paused!";
+                }
+                return;
+            }
+            else if(balls.length>0 && t==undefined){
+                if(!confirm("Do you want to continue? Clicking cancel will restart.")){
+                    balls=new Array();
+                }
+            }
+            e.target.innerText='Running...';
+            if(length && length>0){
+                e.target.innerText='Continue Generate Lenth '+length+' Please Wait...'
+            }
+            processbar.style.display='block';
+            box.innerHTML='';
+            
+            if(balls.length==0){
+                length = searchToJsonObject();
+                if(length===0){
+                    length = Math.ceil(Math.random()*(10-1)+1);
+                }
+                state.innerText = 'Generate Lenth '+length+' Please Wait...';
+                loopTimesCopy = Math.ceil(Math.random()*(9999-1000)+1000);
+                loopTimes=loopTimesCopy;
+            }
+
+            var numbers = new Array();
+            let maximum = 80;
+            let minimum = 1;
+            var index = 0;
+            let interval = length;
+            t = setInterval(function () {
+                if (loopTimes > 0 && index < length) {
+                    let num = Math.ceil(Math.random() * (maximum - minimum) + minimum);
+                    if (numbers.indexOf(num) == -1) {
+                        numbers.push(num);
+                        index++;
+                    }
+                }
+                else if (index >= length) {
+                    var ball = new Ball(numbers);
+                    numbers = new Array();
+                    loopTimes--;
+                    index = 0;
+                    let currentProcess=loopTimesCopy - loopTimes;
+                    let txt="(" + currentProcess + "/" + (loopTimesCopy) + ")"
+                    let maxBalls=getMaxBalls();
+                    info.innerHTML = "<p>Process: "+txt+"</p>"+"<p>Speed: "+speed+" piece/s</p><p>Max Times: "+maxBalls.times+"</p><p id='maxNumbers'>Max Numbers: "+maxBalls.array.toString()+"</p>";
+
+                    let currentProcessPercent=Math.floor((currentProcess/loopTimesCopy) * 100);
+                    let ptxt=currentProcessPercent+"%";
+                    processbar_txt.innerText=ptxt
+                    processbar_current.style.flex= ptxt;
+                    processbar_residual.style.flex= (100-currentProcessPercent)+"%";
+                }
+                if (loopTimes <= 0) {
+                    clearInterval(t);
+                    state.style.color = "#4fc959";
+                    let maxBalls = writeBalls()
+                    info.innerHTML = "<p>Process: "+loopTimesCopy+"/"+loopTimesCopy+"</p>"+"<p>Speed: "+speed+"</p><p>Max Times: "+maxBalls.times+"</p><p id='maxNumbers'>Max Numbers: "+maxBalls.array.toString()+"</p>";
+                    state.innerText = 'Completed.';
+                    balls=[];
+                    processbar.style.display='none';
+                    processbar_txt.innerText='';
+                    processbar_current.style.flex='0%';
+                    processbar_residual.style.flex='100%';
+                    lastLen =0;
+                    return;
+                }
+            }, interval);
+        });
+    
+
+        function writeBalls() {
+                let maxBalls=getMaxBalls();
+                maxBalls.array.forEach(b => {
+                    addElement(b)
+                });
+                document.querySelector("#maxNumbers").innerText=maxBalls.toString();
+                return maxBalls;
+        }
+        function getMaxBalls() {
+            var maxBalls = balls[0];
+            for (var i = 1; i < balls.length - 1; i++) {
+                if (balls[i].times > maxBalls.times)
+                    maxBalls = balls[i];
+            }
+            return maxBalls;
+        }
+
+        function addElement(num) {
+            var text;
+            if (num < 10)
+                text = "0" + num;
+            else
+                text = num;
+            box.innerHTML += "<div class='number'>" + text + "</div>";
+        }
+
+        /**
+         * 球对象
+         * @param {number} numArray 生成的球数组
+         * 
+        */
+        function Ball(numArray) {
+            var obj = new Object();
+            obj.array = sortArray(numArray);
+            obj.times = 1;
+            balls.forEach(b => {
+                if (b.array.toString().indexOf(obj.array.toString()) != -1) {
+                    b.times++;
+                    return;
+                }
+            });
+            if (obj.times == 1) {
+                balls.push(obj);
+            }
+            return obj;
+        }
+
+        function sortArray(arr) {
+            for (var i = 0; i < arr.length - 1; i++) {
+                for (var j = 0; j < arr.length - 1 - i; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        var temp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = temp;
+                    }
+                }
+            }
+            return arr;
+        }
+
+        function searchToJsonObject(){
+            let len=0;
+            let querystring = location.search.substring(1).split('=');
+            if(querystring && querystring.length>1){
+                len=parseInt(querystring[1]);
+            }
+            return len;
+        }
+    </script>
+</body>
+
+</html>

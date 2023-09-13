@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Caipiao Machine</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+   <div class="container mt-5">
+    <div class="row">
+        <div class="col-sm-8 offset-sm-2 col-md-6 offset-md-3">
+            <div class="jumbotron">
+                <h1 class="display-4">Hello, Stranger!</h1>
+                <p class="lead">This tool can be used to simulate the generation of welfare and sports lottery tickets in China.</p>
+                <hr class="my-4">
+                <p>Please select the corresponding type, please wait for other types.</p>
+                <div class="btn-containers">
+                    <a class="btn btn-primary btn-md a-btn" role="button" go-url="eight.html">
+                        <span class="spinner-grow spinner-grow-sm sr-only" role="status" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
+                        <span class="nm-txt">Happy 8</span>
+                    </a>
+                    <a class="btn btn-primary btn-md a-btn" role="button" go-url="eight.html">
+                        <span class="spinner-grow spinner-grow-sm sr-only" role="status" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
+                        <span class="nm-txt">Union Lotto</span>
+                    </a>
+                    <a class="btn btn-primary btn-md a-btn" role="button" go-url="eight.html">
+                        <span class="spinner-grow spinner-grow-sm sr-only" role="status" aria-hidden="true"></span>
+                        <span class="sr-only">Loading...</span>
+                        <span class="nm-txt">Super Lotto</span>
+                    </a>
+                </div>
+              </div>
+        </div>
+    </div>
+    
+   </div>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
+    <script>
+        $(function(){
+            $(".a-btn").on('click',function(e){
+                var gotoUrl = $(this).attr("go-url");
+                $(this).addClass('disabled');
+                $(this).find(".nm-txt").hide();
+                $(this).find('.sr-only').removeClass('sr-only');
+                setTimeout(() => {
+                    location.href=gotoUrl;
+                }, 1000);
+            })
+
+        });
+    </script>
+</body>
+</html>
